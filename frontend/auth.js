@@ -1,5 +1,8 @@
+const API_BASE = '/api';
+
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('.auth-form');
+  if (!loginForm) return;
 
   loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -8,13 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('login-password').value;
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/login', {
+      const response = await fetch(`${API_BASE}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         alert(result.error || 'Login failed');
@@ -29,16 +32,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-
-const BACKEND_URL = 'http://127.0.0.1:5000/api';
-
-async function login(email, password) {
-  const response = await fetch(`${BACKEND_URL}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-
-  return response.json();
-}
