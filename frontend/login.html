@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GBOLAGADE's MiniMart - Login</title>
+  <link rel="stylesheet" href="login.css">
+  <script src="auth.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="auth-header">
+      <a class="brand" href="landing_page.html">GBOLAGADE's MiniMart</a>
+      <p>Welcome back! Log in to continue shopping and track your orders.</p>
+    </header>
+
+    <main>
+      <form action="login" method="POST" class="auth-form" novalidate>
+        <div class="form-field">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" name="email" required autocomplete="email" placeholder="you@example.com">
+        </div>
+
+        <div class="form-field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+        </div>
+
+        <button type="submit" class="primary-button">Log In</button>
+      </form>
+
+      <p class="switch-action">New to GBOLAGADE's MiniMart? <a href="signup.html">Create an account</a>.</p>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GBOLAGADE's MiniMart - Support Chat</title>
+  <link rel="stylesheet" href="chat.css">
+  <script src="script.js" defer></script>
+  <script src="auth.js"></script>
+</head>
+<body>
+
+  <div class="container">
+
+    <aside class="left-nav" aria-label="Main navigation">
+      <div class="profile-block">
+        <button class="profile-toggle" aria-expanded="false">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="profile-name">Gbolagade</span>
+        </button>
+
+        <div class="profile-card">
+          <h4>Customer Account</h4>
+          <p><strong>Gbolagade MiniMart</strong></p>
+          <p>support@gbolagademart.com</p>
+        </div>
+      </div>
+
+      <ul class="nav-list">
+        <li><button type="button" aria-label="Notifications">🔔 Notifications <span class="badge">2</span></button></li>
+        <li><button type="button">🚪 Log out</button></li>
+      </ul>
+    </aside>
+
+    <main class="middle" aria-label="Orders and history">
+
+      <section class="order-history">
+        <div class="section-header">
+          <h2>Your Recent Orders</h2>
+          <p>Choose an order to see delivery updates and support details.</p>
+        </div>
+
+        <article class="order-card">
+          <div class="order-grid">
+            <div>
+              <h3>Order #FC-98211</h3>
+              <p class="items">Organic Milk, Apples, Whole Wheat Bread</p>
+            </div>
+            <div class="order-meta">
+              <p class="status">Out for Delivery</p>
+              <p class="date">July 20, 2026</p>
+              <p class="amount">₦45,200</p>
+            </div>
+          </div>
+          <button type="button">Select Order for Support</button>
+        </article>
+
+        <article class="order-card">
+          <div class="order-grid">
+            <div>
+              <h3>Order #FC-97500</h3>
+              <p class="items">Bananas, Almond Milk, Cheddar Cheese</p>
+            </div>
+            <div class="order-meta">
+              <p class="status status-delivered">Delivered</p>
+              <p class="date">July 12, 2026</p>
+              <p class="amount">₦28,500</p>
+            </div>
+          </div>
+          <button type="button">Select Order for Support</button>
+        </article>
+      </section>
+
+      <section class="chat-history">
+        <div class="section-header">
+          <h2>Chat History</h2>
+          <p>Search or reopen recent conversations with customer support.</p>
+        </div>
+
+        <form class="chat-search-form" role="search">
+          <label for="search-chats" class="sr-only">Search chats</label>
+          <input type="search" id="search-chats" placeholder="Search previous chats...">
+        </form>
+
+        <article class="history-card active">
+          <h3 id="order_id">Order #FC-98211 - Delivery Inquiry</h3>
+          <p><strong>Agent:</strong> Sarah</p>
+          <p class="snippet">Hi Sarah! Do you know approximately what time...</p>
+          <small>Today, 11:42 AM</small>
+          <button type="button">Open Chat</button>
+        </article>
+
+        <article class="history-card">
+          <h3>Order #FC-97500 - Damaged Item</h3>
+          <p><strong>Agent:</strong> Mark</p>
+          <p class="snippet">Refund of ₦4,500 processed for the damaged item...</p>
+          <small>July 12, 2026</small>
+          <button type="button">View Resolved Chat</button>
+        </article>
+      </section>
+
+    </main>
+
+    <section class="chat-section" aria-label="Live chat">
+      <header class="chat-header">
+        <div>
+          <h2>Customer Support Chat</h2>
+          <p class="chat-meta"><em>Connected on Order #FC-98211</em></p>
+        </div>
+        <div class="support-pill">Live support available</div>
+      </header>
+
+      <div class="chat-window" role="log" aria-live="polite">
+        <div class="message incoming">
+          <p><strong>Support Agent (Sarah):</strong> Hi there! How can I help you with your order today?</p>
+          <small>11:40 AM</small>
+        </div>
+
+        <div class="message outgoing">
+          <p><strong>You:</strong> Hi Sarah! Do you know approximately what time the driver will arrive?</p>
+          <small>11:42 AM</small>
+        </div>
+      </div>
+
+      <form class="chat-input-form" aria-label="Send a chat message">
+        <label for="chat-message" class="sr-only">Type a message</label>
+        <input type="text" id="chat-message" placeholder="Type your message here..." autocomplete="off" required>
+        <button type="button" aria-label="Record voice note" class="mic-button">🎙️</button>
+        <button type="submit" class="send-button">Send</button>
+      </form>
+    </section>
+
+  </div>
+
+</body>
+</html>
