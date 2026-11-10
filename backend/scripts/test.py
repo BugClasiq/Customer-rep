@@ -101,7 +101,11 @@ with app.app_context():
 
 
     while flag:
-        order_item = eval(input("What item to you want to add to your order? [1-5](0 to confirm.)"))
+        try:
+            order_item = int(input("What item do you want to add to your order? [1-5] (0 to confirm.)"))
+        except ValueError:
+            print("Please enter a number.")
+            continue
 
         if order_item > 0 and order_item <= len(products):
             order_list.append(order_item)
