@@ -1,5 +1,11 @@
-flask 
-flask-sqlalchemy 
-flask-migrate 
-flask-cors
-gradio
+flask>=3.0
+flask-sqlalchemy>=3.1
+flask-migrate>=4.0
+flask-cors>=4.0
+flask-jwt-extended>=4.6
+bcrypt>=4.1
+python-dotenv>=1.0
+pymysql>=1.1
+gunicorn>=21.2
+gradio>=5.0
+groq>=0.9

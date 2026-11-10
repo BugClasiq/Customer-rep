@@ -3,9 +3,11 @@ import wave
 import tempfile
 import time
 import contextlib
-import pyaudio
-from pywhispercpp.model import Model
-import pyttsx3
+
+try:
+    import pyttsx3
+except ImportError:
+    pyttsx3 = None
 
 
 @contextlib.contextmanager
@@ -29,6 +31,8 @@ class Speech:
     @classmethod
     def get_model(cls):
         if cls._model is None:
+            from pywhispercpp.model import Model
+
             try:
                 with _suppress_stderr():
                     cls._model = Model('tiny', n_threads=4)
@@ -40,6 +44,8 @@ class Speech:
 
     @staticmethod
     def record_audio(output_path, silence_threshold=500, silence_duration=1.0, sample_rate=16000):
+        import pyaudio
+
         audio = pyaudio.PyAudio()
         # Capture sample width BEFORE terminating PyAudio
         sample_width = audio.get_sample_size(pyaudio.paInt16)

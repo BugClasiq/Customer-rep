@@ -3,8 +3,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from groq_provider import GroqClient
-from intent_detector import detect_intent
+from ai.groq_provider import GroqClient
+from ai.intent_detector import detect_intent
 from app import create_app
 from app.extension import db
 from app.models.product import Product
@@ -113,6 +113,19 @@ def format_chat_history(chat_history):
     return formatted + "\n"
 
 
+_default_app = None
+_default_context = None
+
+
+def _get_default_context():
+    """Create the Flask app once per process instead of on every message."""
+    global _default_app, _default_context
+    if _default_context is None:
+        _default_app = create_app()
+        _default_context = _default_app.app_context()
+    return _default_context
+
+
 def generate_response(user_message, chat_history=None, app_context=None):
     """
     Main function to process user input and generate response
@@ -134,8 +147,7 @@ def generate_response(user_message, chat_history=None, app_context=None):
     
     # Create app context if not provided
     if app_context is None:
-        app = create_app()
-        app_context = app.app_context()
+        app_context = _get_default_context()
     
     # Retrieve relevant context from database
     with app_context:

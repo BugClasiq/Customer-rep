@@ -10,9 +10,9 @@ load_dotenv()
 
 
 class GroqClient:
-    def __init__(self, api_key: str=None, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, api_key: str = None, model: str = "groq/compound-mini"):
         self.api_key = api_key or os.getenv("GROQ_API_KEY")
-        self.model = model or os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        self.model = model or os.getenv("GROQ_MODEL", "groq/compound-mini")
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         if not self.api_key:
@@ -20,7 +20,7 @@ class GroqClient:
         client = Groq(api_key=self.api_key)
         
         completion = client.chat.completions.create(
-                model="groq/compound-mini",
+                model=self.model,
                 messages=[
                     {
                         "role": "system",

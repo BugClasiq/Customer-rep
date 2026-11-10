@@ -1,4 +1,4 @@
-from groq_provider import GroqClient
+from ai.groq_provider import GroqClient
 
 
 system_prompt = """

@@ -8,12 +8,8 @@ backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-ai_dir = os.path.dirname(__file__)
-if ai_dir not in sys.path:
-    sys.path.insert(0, ai_dir)
-
-from speech import Speech
-from engine import generate_response
+from ai.speech import Speech
+from ai.engine import generate_response
 
 
 def to_gradio_chatbot_format(history):
@@ -201,5 +197,7 @@ def create_app():
 
 if __name__ == "__main__":
     demo = create_app()
-    print("Launching Support AI Gradio Interface on http://127.0.0.1:7860 ...")
-    demo.launch(server_name="127.0.0.1", server_port=7860, share=False)
+    host = os.getenv("GRADIO_SERVER_NAME", "127.0.0.1")
+    port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+    print(f"Launching Support AI Gradio Interface on http://{host}:{port} ...")
+    demo.launch(server_name=host, server_port=port, share=False)
