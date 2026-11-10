@@ -8,5 +8,8 @@ instance/
 # Env / secrets
 .env
 
+# Local SQLite databases
+*.db
+
 # OS
 .DS_Store
