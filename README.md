@@ -71,6 +71,24 @@ Then open:
 
 `docker compose down -v` removes the database volume too.
 
+## Deploy everything on Railway (one place)
+
+Everything runs as **one web service** (Flask serves the frontend, `/api/*` and the chat) plus **one MySQL plugin** in the same project. The optional Gradio UI can be a second service.
+
+1. Push this repo to GitHub (already done).
+2. At railway.app: **New Project → Deploy from GitHub repo** → pick `BugClasiq/Customer-rep`.
+3. **+ New → Database → MySQL**.
+4. On the web service's **Variables** tab:
+   - `DATABASE_URL` — reference the plugin (e.g. `${{MySQL.MYSQL_URL}}`); cloud plugins hand out `mysql://...`, and this app rewrites it to `mysql+pymysql://...` automatically.
+   - `SECRET_KEY`, `JWT_SECRET_KEY` — any long random strings.
+   - `GROQ_API_KEY` — required for the AI chat (`/api/chat`).
+5. On the web service's **Settings** tab: **Root Directory** = `backend`. Railway detects `backend/Dockerfile`, applies migrations on boot (`flask db upgrade`), and serves on `$PORT`.
+6. **Networking → Generate Domain** → open it. You should land on the MiniMart landing page; `/<domain>/api/health` returns `{"status":"ok"}`.
+7. Demo data: open a **Shell** on the service and run `python scripts/seed.py` (drops and recreates all tables). Log in as `john@gmail.com` / `customer123`.
+8. Optional Gradio UI: **+ New → GitHub repo** (same repo) → **Root Directory** `backend`, **Custom Start Command** `python ai/main.py`, variable `GRADIO_SERVER_NAME=0.0.0.0`. It binds Railway's `$PORT` automatically. Text chat works; mic input additionally requires `pip install -r requirements-voice.txt`, which needs native audio libraries.
+
+Note: Railway is not free — you get trial credit and the MySQL plugin consumes credits (usage-based, a few dollars/month).
+
 ## Environment variables
 
 See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`/api/chat` and the Gradio UI) — without it, chat returns HTTP 503 / an error bubble; everything else works. Set `GROQ_MODEL` to override the default `groq/compound-mini`.
