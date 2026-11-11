@@ -198,6 +198,7 @@ def create_app():
 if __name__ == "__main__":
     demo = create_app()
     host = os.getenv("GRADIO_SERVER_NAME", "127.0.0.1")
-    port = int(os.getenv("GRADIO_SERVER_PORT", "7860"))
+    # Cloud hosts inject PORT; GRADIO_SERVER_PORT overrides explicitly
+    port = int(os.getenv("GRADIO_SERVER_PORT") or os.getenv("PORT") or "7860")
     print(f"Launching Support AI Gradio Interface on http://{host}:{port} ...")
     demo.launch(server_name=host, server_port=port, share=False)

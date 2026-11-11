@@ -6,6 +6,18 @@ load_dotenv(os.path.join(basedir, ".env"))
 load_dotenv()
 
 
+def _normalize_database_url(url: str) -> str:
+    """Cloud plugins (Railway, PlanetScale, ...) hand out bare mysql:// URLs;
+    SQLAlchemy needs the driver spelled out."""
+    if url.startswith("mysql://"):
+        return "mysql+pymysql://" + url[len("mysql://"):]
+    if url.startswith("postgres://"):
+        return "postgresql://" + url[len("postgres://"):]
+    return url
+
+
+DATABASE_URL = _normalize_database_url(os.getenv("DATABASE_URL")) if os.getenv("DATABASE_URL") else None
+
 
 class Config:
 
@@ -18,7 +30,7 @@ class Config:
     DB_NAME = os.getenv("DB_NAME", "project_db")
 
     SQLALCHEMY_DATABASE_URI = (
-        os.getenv("DATABASE_URL")
+        DATABASE_URL
         or f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
 

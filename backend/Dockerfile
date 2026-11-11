@@ -13,5 +13,5 @@ COPY . .
 
 EXPOSE 5000
 
-# Apply migrations, then serve. Migrations are idempotent.
-CMD ["sh", "-c", "flask db upgrade && gunicorn -b 0.0.0.0:5000 run:app"]
+# Apply migrations, then serve on $PORT (Railway/Render inject PORT; default 5000 locally).
+CMD ["sh", "-c", "flask db upgrade && gunicorn -b 0.0.0.0:${PORT:-5000} run:app"]
