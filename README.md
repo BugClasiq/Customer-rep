@@ -89,6 +89,24 @@ Everything runs as **one web service** (Flask serves the frontend, `/api/*` and 
 
 Note: Railway is not free — you get trial credit and the MySQL plugin consumes credits (usage-based, a few dollars/month).
 
+## Deploy everything on Render (free)
+
+One Render web service (free tier) serves the frontend, `/api/*` and the chat. MySQL comes from [Aiven's](https://aiven.io/free-mysql) free tier (Render has no free MySQL); the code rewrites its `mysql://` URL for you.
+
+**A. Get a free MySQL (5 minutes)**
+1. Sign up at aiven.io → **New project? → Free MySQL** → create the free plan.
+2. Once running, copy the **Connection URI** (`mysql://user:password@host:port/defaultdb`).
+
+**B. Deploy the app**
+1. render.com → **New → Blueprint** → connect your GitHub repo → select `BugClasiq/Customer-rep`.
+2. Render reads `render.yaml` and asks for `DATABASE_URL` (paste the Aiven URI) and `GROQ_API_KEY` (from console.groq.com). `SECRET_KEY`/`JWT_SECRET_KEY` are generated automatically.
+3. Click **Apply**. On first boot the container runs `flask db upgrade` to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — it's your MiniMart landing page.
+
+**C. Demo data (optional, wipes and recreates tables)**
+Render dashboard → your service → **Shell** → `python scripts/seed.py` → log in as `john@gmail.com` / `customer123`.
+
+**Free-tier caveats:** the service sleeps after 15 minutes idle (first request after a nap takes ~30–60s — normal); Aiven's free node has no SLA/backups; the chat needs `GROQ_API_KEY` or it returns a "temporarily unavailable" message. Render's free Postgres expires after 90 days — don't use it here; this setup uses Aiven MySQL instead.
+
 ## Environment variables
 
 See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`/api/chat` and the Gradio UI) — without it, chat returns HTTP 503 / an error bubble; everything else works. Set `GROQ_MODEL` to override the default `groq/compound-mini`.
