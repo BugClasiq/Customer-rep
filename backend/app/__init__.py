@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, abort, send_from_directory
+from flask import Flask, abort, request, send_from_directory
 from flask_cors import CORS
 
 from config import Config
@@ -35,6 +35,14 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(health_bp)
+
+    # Static frontend must always be fresh — otherwise browsers serve hours-old
+    # JS/CSS and UI bugs look like "nothing happens".
+    @app.after_request
+    def add_no_cache_headers(resp):
+        if not request.path.startswith("/api/"):
+            resp.headers["Cache-Control"] = "no-store"
+        return resp
 
     # Serve the static frontend too, so `python run.py` works on its own.
     # (In Docker only the nginx frontend serves these files.)
