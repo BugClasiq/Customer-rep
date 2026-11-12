@@ -109,7 +109,7 @@ Render dashboard → your service → **Shell** → `python scripts/seed.py` →
 
 ## Environment variables
 
-See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`/api/chat` and the Gradio UI) — without it, chat returns HTTP 503 / an error bubble; everything else works. Set `GROQ_MODEL` to override the default `groq/compound-mini`.
+See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`/api/chat` and the Gradio UI) - without it, chat returns HTTP 503 / an error bubble; everything else works. Set `GROQ_MODEL` to override the default `llama-3.1-8b-instant`.
 
 For local (non-Docker) runs, `DATABASE_URL` overrides the MySQL connection string, e.g. `DATABASE_URL=sqlite:///dev.db python run.py`. Create the schema with `cd backend && set FLASK_APP=run.py && flask db upgrade` (works for SQLite too), or just run `python scripts/seed.py` to drop/recreate everything and load the demo data. The Gradio assistant is optional and only for the dedicated voice chat UI — run it with `python ai/main.py` on http://127.0.0.1:7860.
 

@@ -10,9 +10,9 @@ load_dotenv()
 
 
 class GroqClient:
-    def __init__(self, api_key: str = None, model: str = "groq/compound-mini"):
+    def __init__(self, api_key: str = None, model: str = "llama-3.1-8b-instant"):
         self.api_key = api_key or os.getenv("GROQ_API_KEY")
-        self.model = model or os.getenv("GROQ_MODEL", "groq/compound-mini")
+        self.model = model or os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         if not self.api_key:
