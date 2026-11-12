@@ -1,5 +1,5 @@
-# Root image: builds the whole app as one service.
-# Flask serves the static frontend, /api/* (auth, chat, health) and needs no nginx.
+# Root image: builds the app as one service.
+# The static frontend was removed; Flask serves only /api/* (health, auth, chat).
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

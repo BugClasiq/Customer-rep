@@ -1,15 +1,12 @@
 # Customer-rep
 
-GBOLAGADE's MiniMart — a support assistant web app: Flask API backend, static HTML/CSS/JS frontend, MySQL database, and a Groq-powered AI assistant (text + voice) served via Gradio.
-
-The app runs fine **without Docker** — Flask serves the frontend itself. Docker files (`Dockerfile`s + `docker-compose.yml`) are included for anyone who does have Docker.
+GBOLAGADE's MiniMart — a support assistant: Flask API backend on MySQL, plus a Groq-powered AI assistant (text + voice) served via Gradio. The static frontend was removed; the service now exposes `/api/*` only.
 
 ## Stack
 
 | Layer    | Tech                                                        |
 |----------|-------------------------------------------------------------|
-| Frontend | Static HTML/CSS/JS (served by Flask locally, or by nginx in Docker) |
-| Backend  | Flask (gunicorn in Docker), SQLAlchemy + Alembic migrations |
+| Backend  | Flask API (gunicorn in Docker), SQLAlchemy + Alembic migrations |
 | AI       | Gradio UI (`ai/main.py`) + `POST /api/chat`, Groq LLM       |
 | Database | MySQL 8 (or SQLite via `DATABASE_URL` for local runs)       |
 
@@ -27,7 +24,7 @@ set GROQ_API_KEY=gsk_...                  # needed for the AI chat only
 python run.py
 ```
 
-Open http://127.0.0.1:5000 — Flask serves the landing page, login, signup and the support chat. (With MySQL instead of SQLite, unset `DATABASE_URL` and set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.)
+Open http://127.0.0.1:5000/api/health — returns `{"status":"ok"}`. There is no frontend; call the API directly (curl, Postman, a web client). (With MySQL instead of SQLite, unset `DATABASE_URL` and set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.)
 
 Seed the demo data (an admin, a customer `john@gmail.com` / `customer123`, products, an order, knowledge-base entries) — **this drops and recreates all tables**:
 
@@ -54,17 +51,15 @@ Seed the demo data (an admin, a customer, products, an order, knowledge-base ent
 docker compose exec backend python scripts/seed.py
 ```
 
-Then open:
+Then reach the API:
 
-- Frontend: http://localhost:8080  (login: `john@gmail.com` / `customer123` after seeding)
 - Backend API: http://localhost:5000/api/health
-- Gradio AI assistant (full support chat): http://localhost:7860
+- Gradio AI assistant (full support chat): http://localhost:7860 (login: `john@gmail.com` / `customer123` after seeding)
 
 ### Services
 
 | Service  | Port | Purpose                                     |
 |----------|------|---------------------------------------------|
-| frontend | 8080 | nginx serving the static site, `/api` proxy |
 | backend  | 5000 | Flask API (`/api/login`, `/api/signup`, `/api/chat`, `/api/health`) |
 | ai       | 7860 | Gradio Support AI assistant                  |
 | db       | —    | MySQL 8 (volume `db_data`)                  |
@@ -73,7 +68,7 @@ Then open:
 
 ## Deploy everything on Railway (one place)
 
-Everything runs as **one web service** (Flask serves the frontend, `/api/*` and the chat) plus **one MySQL plugin** in the same project. The optional Gradio UI can be a second service.
+Everything runs as **one web service** exposing the API (`/api/*`) plus **one MySQL plugin** in the same project. The optional Gradio UI can be a second service.
 
 1. Push this repo to GitHub (already done).
 2. At railway.app: **New Project → Deploy from GitHub repo** → pick `BugClasiq/Customer-rep`.
@@ -83,7 +78,7 @@ Everything runs as **one web service** (Flask serves the frontend, `/api/*` and 
    - `SECRET_KEY`, `JWT_SECRET_KEY` — any long random strings.
    - `GROQ_API_KEY` — required for the AI chat (`/api/chat`).
 5. The **Root Directory is `backend`** on the service — Railway builds `backend/Dockerfile` with an entry of `gunicorn → run:app`, applies migrations on boot when `DATABASE_URL` is set (otherwise boots anyway so `/api/health` works), and serves on `$PORT`.
-6. **Networking → Generate Domain** → open it. You should land on the MiniMart landing page; `/<domain>/api/health` returns `{"status":"ok"}`.
+6. **Networking → Generate Domain** → open it. `/api/health` returns `{"status":"ok"}`. The service exposes the API only — there is no frontend.
 7. Demo data: open a **Shell** on the service and run `python scripts/seed.py` (drops and recreates all tables). Log in as `john@gmail.com` / `customer123`.
 8. Optional Gradio UI: **+ New → GitHub repo** (same repo) → **Root Directory** `backend`, **Custom Start Command** `python ai/main.py`, variable `GRADIO_SERVER_NAME=0.0.0.0`. It binds Railway's `$PORT` automatically. Text chat works; mic input additionally requires `pip install -r requirements-voice.txt`, which needs native audio libraries.
 
@@ -91,7 +86,7 @@ Note: Railway is not free — you get trial credit and the MySQL plugin consumes
 
 ## Deploy everything on Render (free)
 
-One Render web service (free tier) serves the frontend, `/api/*` and the chat. MySQL comes from [Aiven's](https://aiven.io/free-mysql) free tier (Render has no free MySQL); the code rewrites its `mysql://` URL for you.
+One Render web service (free tier) serves the API (`/api/*`). MySQL comes from [Aiven's](https://aiven.io/free-mysql) free tier (Render has no free MySQL); the code rewrites its `mysql://` URL for you.
 
 **A. Get a free MySQL (5 minutes)**
 1. Sign up at aiven.io → **New project? → Free MySQL** → create the free plan.
@@ -100,7 +95,7 @@ One Render web service (free tier) serves the frontend, `/api/*` and the chat. M
 **B. Deploy the app**
 1. render.com → **New → Blueprint** → connect your GitHub repo → select `BugClasiq/Customer-rep`.
 2. Render reads `render.yaml` and asks for `DATABASE_URL` (paste the Aiven URI) and `GROQ_API_KEY` (from console.groq.com). `SECRET_KEY`/`JWT_SECRET_KEY` are generated automatically.
-3. Click **Apply**. On first boot the container runs `flask db upgrade` (when `DATABASE_URL` is set) to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — it's your MiniMart landing page.
+3. Click **Apply**. On first boot the container runs `flask db upgrade` (when `DATABASE_URL` is set) to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — `/api/health` returns `{"status":"ok"}`.
 
 **C. Demo data (optional, wipes and recreates tables)**
 Render dashboard → your service → **Shell** → `python scripts/seed.py` → log in as `john@gmail.com` / `customer123`.
@@ -126,15 +121,14 @@ They need a C toolchain and platform audio libraries (e.g. `portaudio19-dev`). W
 ## Project layout
 
 ```
-frontend/    Static site (login/signup/landing/chat) + nginx config + Dockerfile
 backend/
   app/       Flask app factory, extensions, models, routes (auth, chat, health)
   ai/        Intent detection, Groq provider, response engine, speech, Gradio UI
   migrations/ Alembic migrations
   scripts/   seed.py (demo data), test.py (interactive order-CLI)
-  run.py     Dev entrypoint (gunicorn is used in Docker)
-Dockerfile          Whole-app image: Flask serves the frontend AND the API (used by Railway/Render)
-docker-compose.yml  MySQL + backend + nginx frontend + optional Gradio service
+  run.py     Entry: Flask dev server (gunicorn is used in Docker)
+Dockerfile          Whole-app image: Flask API (gunicorn) used by Railway/Render
+docker-compose.yml  MySQL + backend (+ optional Gradio service)
 render.yaml         Render Blueprint (free, one web service)
 ```
 
