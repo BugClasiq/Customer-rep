@@ -9,8 +9,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY backend/requirements.txt backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+# Toolchain for pywhispercpp (whisper.cpp) and espeak-ng for pyttsx3 (TTS)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cmake build-essential espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt backend/requirements-voice.txt backend/
+RUN pip install --no-cache-dir -r backend/requirements.txt \
+    && pip install --no-cache-dir -r backend/requirements-voice.txt \
+    && python -c "from pywhispercpp.model import Model; Model('tiny', n_threads=4)"
 
 COPY . .
 

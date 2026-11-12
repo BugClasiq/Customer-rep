@@ -1,7 +1,8 @@
 # Optional voice features for the Gradio assistant (ai/speech.py).
-# Native builds — need a compiler and platform audio libraries (e.g. portaudio19-dev, libsndfile).
+# Needs a C toolchain (cmake + build-essential) and espeak-ng, both installed
+# by the Dockerfiles. pyaudio is intentionally excluded: the browser records
+# audio and uploads it, so the server never captures from a sound card.
 # Install with: pip install -r requirements-voice.txt
-pyaudio>=0.2.14
 pywhispercpp>=1.2
 pyttsx3>=2.90
 av>=12.0

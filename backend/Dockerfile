@@ -7,8 +7,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends cmake build-essential espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt requirements-voice.txt ./
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir -r requirements-voice.txt \
+    && python -c "from pywhispercpp.model import Model; Model('tiny', n_threads=4)"
 
 COPY . .
 

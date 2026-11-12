@@ -106,15 +106,9 @@ See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`
 
 For local (non-Docker) runs, run the assistant with `cd backend && set DATABASE_URL=sqlite:///dev.db && python run.py` and open http://localhost:7860. Create the schema with `flask --app app:create_app() db upgrade` (works for SQLite too), or just run `python scripts/seed.py` to drop/recreate everything and load the demo data. The Flask API in `app/` runs separately (`flask --app app:create_app() run`) if you need `/api/*` — it is not started by `run.py`.
 
-## Voice features (optional)
+## Voice features (on by default in Docker)
 
-The Gradio assistant supports mic input / spoken replies, but those native dependencies are **not** installed by default:
-
-```bash
-pip install -r backend/requirements-voice.txt
-```
-
-They need a C toolchain and platform audio libraries (e.g. `portaudio19-dev`). Without them, text chat in the Gradio UI and `/api/chat` work normally; voice buttons degrade gracefully.
+Mic input and spoken replies work out of the box when built with the Dockerfiles: they install `cmake`, `build-essential` and `espeak-ng`, the Python wheels from `requirements-voice.txt`, and pre-download the whisper.cpp `tiny` model at build time (~75 MB, so first use isn't a download). Without voice support (e.g. plain `pip install -r requirements.txt` locally), text chat works normally and the voice buttons degrade gracefully. Nothing about the browser changes: allow mic access on the domain when prompted (lock icon in the address bar), or use "Upload Audio" with a file instead of the microphone.
 
 ## Project layout
 
