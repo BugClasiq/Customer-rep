@@ -8,7 +8,7 @@ services:
     name: customer-rep
     runtime: docker
     plan: free
-    healthCheckPath: /api/health
+    healthCheckPath: /
     envVars:
       # Auto-generated random values
       - key: SECRET_KEY

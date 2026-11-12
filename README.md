@@ -1,12 +1,12 @@
 # Customer-rep
 
-GBOLAGADE's MiniMart — a support assistant: Flask API backend on MySQL, plus a Groq-powered AI assistant (text + voice) served via Gradio. The static frontend was removed; the service now exposes `/api/*` only.
+GBOLAGADE's MiniMart — a support assistant: Gradio Support AI Assistant (text + voice) powered by Groq and MySQL. The entry point is `run.py`, which launches the Gradio assistant; the Flask API in `app/` is independent and runs separately if needed.
 
 ## Stack
 
 | Layer    | Tech                                                        |
 |----------|-------------------------------------------------------------|
-| Backend  | Flask API (gunicorn in Docker), SQLAlchemy + Alembic migrations |
+| Backend  | Gradio assistant UI (python run.py) + optional Flask API in app/ |
 | AI       | Gradio UI (`ai/main.py`) + `POST /api/chat`, Groq LLM       |
 | Database | MySQL 8 (or SQLite via `DATABASE_URL` for local runs)       |
 
@@ -24,7 +24,7 @@ set GROQ_API_KEY=gsk_...                  # needed for the AI chat only
 python run.py
 ```
 
-Open http://127.0.0.1:5000/api/health — returns `{"status":"ok"}`. There is no frontend; call the API directly (curl, Postman, a web client). (With MySQL instead of SQLite, unset `DATABASE_URL` and set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.)
+Open http://localhost:7860 — the Gradio assistant UI. (With MySQL instead of SQLite, unset `DATABASE_URL` and set `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`.)
 
 Seed the demo data (an admin, a customer `john@gmail.com` / `customer123`, products, an order, knowledge-base entries) — **this drops and recreates all tables**:
 
@@ -53,15 +53,13 @@ docker compose exec backend python scripts/seed.py
 
 Then reach the API:
 
-- Backend API: http://localhost:5000/api/health
-- Gradio AI assistant (full support chat): http://localhost:7860 (login: `john@gmail.com` / `customer123` after seeding)
+- Gradio AI assistant: http://localhost:7860 (log in as `john@gmail.com` / `customer123` after seeding at the /api/login endpoint if the Flask API is running)
 
 ### Services
 
 | Service  | Port | Purpose                                     |
 |----------|------|---------------------------------------------|
-| backend  | 5000 | Flask API (`/api/login`, `/api/signup`, `/api/chat`, `/api/health`) |
-| ai       | 7860 | Gradio Support AI assistant                  |
+| backend  | 7860 | Gradio Support AI assistant (`python run.py`) |
 | db       | —    | MySQL 8 (volume `db_data`)                  |
 
 `docker compose down -v` removes the database volume too.
@@ -77,8 +75,8 @@ Everything runs as **one web service** exposing the API (`/api/*`) plus **one My
    - `DATABASE_URL` — reference the plugin (e.g. `${{MySQL.MYSQL_URL}}`); cloud plugins hand out `mysql://...`, and this app rewrites it to `mysql+pymysql://...` automatically.
    - `SECRET_KEY`, `JWT_SECRET_KEY` — any long random strings.
    - `GROQ_API_KEY` — required for the AI chat (`/api/chat`).
-5. The **Root Directory is `backend`** on the service — Railway builds `backend/Dockerfile` with an entry of `gunicorn → run:app`, applies migrations on boot when `DATABASE_URL` is set (otherwise boots anyway so `/api/health` works), and serves on `$PORT`.
-6. **Networking → Generate Domain** → open it. `/api/health` returns `{"status":"ok"}`. The service exposes the API only — there is no frontend.
+5. Railway builds the repo-root **Dockerfile** (`python run.py` → Gradio assistant on `$PORT` by default) and applies migrations on boot when `DATABASE_URL` is set (otherwise it boots anyway). Set the service's **healthcheck path to `/`**.
+6. **Networking → Generate Domain** → open it. The **Domain root serves the Gradio assistant** ("Support AI Assistant") — sign in isn't required. Open http://localhost:7860 locally, or `https://<your-domain>` on Railway.
 7. Demo data: open a **Shell** on the service and run `python scripts/seed.py` (drops and recreates all tables). Log in as `john@gmail.com` / `customer123`.
 8. Optional Gradio UI: **+ New → GitHub repo** (same repo) → **Root Directory** `backend`, **Custom Start Command** `python ai/main.py`, variable `GRADIO_SERVER_NAME=0.0.0.0`. It binds Railway's `$PORT` automatically. Text chat works; mic input additionally requires `pip install -r requirements-voice.txt`, which needs native audio libraries.
 
@@ -95,7 +93,7 @@ One Render web service (free tier) serves the API (`/api/*`). MySQL comes from [
 **B. Deploy the app**
 1. render.com → **New → Blueprint** → connect your GitHub repo → select `BugClasiq/Customer-rep`.
 2. Render reads `render.yaml` and asks for `DATABASE_URL` (paste the Aiven URI) and `GROQ_API_KEY` (from console.groq.com). `SECRET_KEY`/`JWT_SECRET_KEY` are generated automatically.
-3. Click **Apply**. On first boot the container runs `flask db upgrade` (when `DATABASE_URL` is set) to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — `/api/health` returns `{"status":"ok"}`.
+3. Click **Apply**. On first boot the container runs `flask db upgrade` (when `DATABASE_URL` is set) to create the schema, then serves the Gradio assistant on Render's port. Wait for the health check (`/`) to go green, then open the URL — it shows the Support AI Assistant.
 
 **C. Demo data (optional, wipes and recreates tables)**
 Render dashboard → your service → **Shell** → `python scripts/seed.py` → log in as `john@gmail.com` / `customer123`.
@@ -106,7 +104,7 @@ Render dashboard → your service → **Shell** → `python scripts/seed.py` →
 
 See `.env.example`. `GROQ_API_KEY` is required for the AI assistant to answer (`/api/chat` and the Gradio UI) - without it, chat returns HTTP 503 / an error bubble; everything else works. Set `GROQ_MODEL` to override the default `openai/gpt-oss-120b`.
 
-For local (non-Docker) runs, `DATABASE_URL` overrides the MySQL connection string, e.g. `DATABASE_URL=sqlite:///dev.db python run.py`. Create the schema with `cd backend && set FLASK_APP=run.py && flask db upgrade` (works for SQLite too), or just run `python scripts/seed.py` to drop/recreate everything and load the demo data. The Gradio assistant is optional and only for the dedicated voice chat UI — run it with `python ai/main.py` on http://127.0.0.1:7860.
+For local (non-Docker) runs, run the assistant with `cd backend && set DATABASE_URL=sqlite:///dev.db && python run.py` and open http://localhost:7860. Create the schema with `flask --app app:create_app() db upgrade` (works for SQLite too), or just run `python scripts/seed.py` to drop/recreate everything and load the demo data. The Flask API in `app/` runs separately (`flask --app app:create_app() run`) if you need `/api/*` — it is not started by `run.py`.
 
 ## Voice features (optional)
 
@@ -126,9 +124,9 @@ backend/
   ai/        Intent detection, Groq provider, response engine, speech, Gradio UI
   migrations/ Alembic migrations
   scripts/   seed.py (demo data), test.py (interactive order-CLI)
-  run.py     Entry: Flask dev server (gunicorn is used in Docker)
-Dockerfile          Whole-app image: Flask API (gunicorn) used by Railway/Render
-docker-compose.yml  MySQL + backend (+ optional Gradio service)
+  run.py     Entry: Gradio Support AI Assistant (gunicorn is no longer used)
+Dockerfile          Whole-app image: python run.py → Gradio assistant on $PORT (Railway/Render)
+docker-compose.yml  MySQL + assistant (python run.py)
 render.yaml         Render Blueprint (free, one web service)
 ```
 
