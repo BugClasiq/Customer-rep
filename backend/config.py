@@ -43,12 +43,12 @@ def _process_mysql_url(url: str) -> tuple:
             if ssl_mode == "disabled":
                 connect_args["ssl_disabled"] = True
             elif ssl_mode == "required":
-                connect_args["ssl_required"] = True
+                # TLS, no CA verification — Aiven free endpoints negotiate TLS but
+                # don't hand out a universally trusted CA path we can mount.
+                connect_args["ssl"] = {}
             elif ssl_mode == "verify_ca":
-                connect_args["ssl_required"] = True
                 connect_args["ssl_verify_cert"] = True
             elif ssl_mode == "verify_identity":
-                connect_args["ssl_required"] = True
                 connect_args["ssl_verify_cert"] = True
                 connect_args["ssl_verify_identity"] = True
 
