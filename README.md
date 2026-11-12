@@ -82,7 +82,7 @@ Everything runs as **one web service** (Flask serves the frontend, `/api/*` and 
    - `DATABASE_URL` — reference the plugin (e.g. `${{MySQL.MYSQL_URL}}`); cloud plugins hand out `mysql://...`, and this app rewrites it to `mysql+pymysql://...` automatically.
    - `SECRET_KEY`, `JWT_SECRET_KEY` — any long random strings.
    - `GROQ_API_KEY` — required for the AI chat (`/api/chat`).
-5. On the web service's **Settings** tab: **Root Directory** = `backend`. Railway detects `backend/Dockerfile`, applies migrations on boot (`flask db upgrade`), and serves on `$PORT`.
+5. Railway detects the repo-root **Dockerfile** (the whole repo is the build context) — no Root Directory needed. It applies migrations on boot (`flask db upgrade`) and serves on `$PORT`.
 6. **Networking → Generate Domain** → open it. You should land on the MiniMart landing page; `/<domain>/api/health` returns `{"status":"ok"}`.
 7. Demo data: open a **Shell** on the service and run `python scripts/seed.py` (drops and recreates all tables). Log in as `john@gmail.com` / `customer123`.
 8. Optional Gradio UI: **+ New → GitHub repo** (same repo) → **Root Directory** `backend`, **Custom Start Command** `python ai/main.py`, variable `GRADIO_SERVER_NAME=0.0.0.0`. It binds Railway's `$PORT` automatically. Text chat works; mic input additionally requires `pip install -r requirements-voice.txt`, which needs native audio libraries.
@@ -133,7 +133,9 @@ backend/
   migrations/ Alembic migrations
   scripts/   seed.py (demo data), test.py (interactive order-CLI)
   run.py     Dev entrypoint (gunicorn is used in Docker)
-docker-compose.yml
+Dockerfile          Whole-app image: Flask serves the frontend AND the API (used by Railway/Render)
+docker-compose.yml  MySQL + backend + nginx frontend + optional Gradio service
+render.yaml         Render Blueprint (free, one web service)
 ```
 
 ## Known limitations / notes

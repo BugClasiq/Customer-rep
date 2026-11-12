@@ -1,12 +1,12 @@
 # Render Blueprint: one web service, everything in one place.
-# Frontend, /api/* and the AI chat are all served by this one Flask app.
+# Frontend, /api/* and the AI chat are all served by this one Flask app via the
+# ROOT Dockerfile (Flask serves the static frontend at /).
 # Database: Aiven's free MySQL (Render has no free MySQL) — paste its
 # connection string when Render prompts for DATABASE_URL at deploy time.
 services:
   - type: web
     name: customer-rep
     runtime: docker
-    rootDir: backend
     plan: free
     healthCheckPath: /api/health
     envVars:
