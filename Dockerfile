@@ -17,5 +17,7 @@ WORKDIR /app/backend
 
 EXPOSE 5000
 
-# Migrations are idempotent; gunicorn binds to $PORT (Railway/Render inject it, default 5000).
-CMD ["sh", "-c", "flask db upgrade && gunicorn -b 0.0.0.0:${PORT:-5000} run:app"]
+# Migrations run only when a database is configured; otherwise boot anyway
+# so /api/health answers even with no DB provisioned. gunicorn binds $PORT
+# (Railway/Render inject it, default 5000).
+CMD ["sh", "-c", "if [ -n \"$DATABASE_URL\" ] || [ -n \"$DB_HOST\" ]; then flask db upgrade; else echo 'No database configured - skipping migrations'; fi && gunicorn -b 0.0.0.0:${PORT:-5000} run:app"]

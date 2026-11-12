@@ -82,7 +82,7 @@ Everything runs as **one web service** (Flask serves the frontend, `/api/*` and 
    - `DATABASE_URL` — reference the plugin (e.g. `${{MySQL.MYSQL_URL}}`); cloud plugins hand out `mysql://...`, and this app rewrites it to `mysql+pymysql://...` automatically.
    - `SECRET_KEY`, `JWT_SECRET_KEY` — any long random strings.
    - `GROQ_API_KEY` — required for the AI chat (`/api/chat`).
-5. Railway detects the repo-root **Dockerfile** (the whole repo is the build context) — no Root Directory needed. It applies migrations on boot (`flask db upgrade`) and serves on `$PORT`.
+5. The **Root Directory is `backend`** on the service — Railway builds `backend/Dockerfile` with an entry of `gunicorn → run:app`, applies migrations on boot when `DATABASE_URL` is set (otherwise boots anyway so `/api/health` works), and serves on `$PORT`.
 6. **Networking → Generate Domain** → open it. You should land on the MiniMart landing page; `/<domain>/api/health` returns `{"status":"ok"}`.
 7. Demo data: open a **Shell** on the service and run `python scripts/seed.py` (drops and recreates all tables). Log in as `john@gmail.com` / `customer123`.
 8. Optional Gradio UI: **+ New → GitHub repo** (same repo) → **Root Directory** `backend`, **Custom Start Command** `python ai/main.py`, variable `GRADIO_SERVER_NAME=0.0.0.0`. It binds Railway's `$PORT` automatically. Text chat works; mic input additionally requires `pip install -r requirements-voice.txt`, which needs native audio libraries.
@@ -100,7 +100,7 @@ One Render web service (free tier) serves the frontend, `/api/*` and the chat. M
 **B. Deploy the app**
 1. render.com → **New → Blueprint** → connect your GitHub repo → select `BugClasiq/Customer-rep`.
 2. Render reads `render.yaml` and asks for `DATABASE_URL` (paste the Aiven URI) and `GROQ_API_KEY` (from console.groq.com). `SECRET_KEY`/`JWT_SECRET_KEY` are generated automatically.
-3. Click **Apply**. On first boot the container runs `flask db upgrade` to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — it's your MiniMart landing page.
+3. Click **Apply**. On first boot the container runs `flask db upgrade` (when `DATABASE_URL` is set) to create the schema, then serves on Render's port. Wait for the health check (`/api/health`) to go green, then open the URL — it's your MiniMart landing page.
 
 **C. Demo data (optional, wipes and recreates tables)**
 Render dashboard → your service → **Shell** → `python scripts/seed.py` → log in as `john@gmail.com` / `customer123`.
